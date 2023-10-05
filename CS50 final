@@ -1,0 +1,83 @@
+# Program that tracks your homework
+
+import csv
+from tabulate import tabulate
+import sys
+from datetime import date
+
+#all the libraries needed
+
+
+#Function 1 which handles the exception when the user enters the incorrect date format and returns the correctly formatted remaining hours left on the homework
+
+def correctly_formatted_date():
+    while True:
+        try:
+            due_date = input("Due date (YYYY-MM-DD): ")
+            year, month, day = due_date.split("-")
+            number_year = int(year)
+            number_month = int(month)
+            number_day = int(day)
+
+            today = date.today()
+            formatted_due_date = date(number_year, number_month, number_day)
+            time_remaining = formatted_due_date - today
+
+            time_remaining_hours = time_remaining.total_seconds() / 86400
+            formatted_time_remaining_hours = f"{int(time_remaining_hours)} day(s)"
+            return formatted_time_remaining_hours
+        except ValueError:
+            print("Invalid date format. Please use YYYY-MM-DD.")
+
+
+#Function 2 adds the homework to the empty csv file
+
+def add_homework_to_csv(file_name):
+    homework_name = input("Homework name: ").strip()
+    subject = input("Subject: ").strip()
+    formatted_time_remaining_hours = correctly_formatted_date()
+
+    with open(file_name, "a") as file:
+        writer = csv.DictWriter(file, fieldnames=["Homework Name", "Subject", "Due Date"])
+        writer.writerow({"Homework Name": homework_name, "Subject": subject, "Due Date": formatted_time_remaining_hours})
+
+#Function 2 adds the homework to the empty csv file
+
+def sort_and_display_csv(input_file):
+    with open(input_file, "r") as file:
+        reader = csv.DictReader(file)
+        sortedlist = sorted(reader, key=lambda row: (row["Due Date"]), reverse=False)
+
+    print(tabulate(sortedlist, headers="keys", tablefmt="grid"))
+
+# main function excecutes everthing
+
+def main():
+    with open("homework.csv", "a") as file:
+        writer = csv.DictWriter(file, fieldnames=["Homework Name", "Subject", "Due Date"])
+        writer.writeheader()
+
+    number_of_homework = int(input("Number of homework: "))
+
+    for _ in range(number_of_homework):
+        add_homework_to_csv("homework.csv")
+
+    sort_and_display_csv("homework.csv")
+
+    option = input("Would you like to add more homework? Press A to add more and press D to not add more.\n").lower()
+
+    if option == "a":
+        extra_number_of_homework = int(input("Extra Number of homework: "))
+        for _ in range(extra_number_of_homework):
+            add_homework_to_csv("homework.csv")
+
+        sort_and_display_csv("homework.csv")
+
+    elif option == "d":
+        sys.exit("Good luck on your assignments")
+
+    else:
+        sys.exit("")
+
+if __name__ == "__main__":
+    main()
